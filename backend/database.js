@@ -7,86 +7,88 @@ let db = null;
 
 function initializeDatabase() {
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('Database initialization timeout (30s)'));
-    }, 30000);
-
+    console.log('Opening database:', DB_PATH);
+    
     db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
-        clearTimeout(timeout);
+        console.error('Failed to open database:', err);
         reject(err);
         return;
       }
 
-      console.log('Database connection established');
-
-      // Set timeout for serialized operations
-      db.configure('busyTimeout', 5000);
-
-      // Create tables
-      db.serialize(() => {
-        // Batches table
-        db.run(`
-          CREATE TABLE IF NOT EXISTS batches (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            stgNum TEXT NOT NULL,
-            startTime INTEGER NOT NULL,
-            confirmTime INTEGER,
-            finalScore REAL,
-            isActive INTEGER DEFAULT 1,
-            createdAt INTEGER NOT NULL
-          )
-        `, (err) => {
-          if (err) console.error('Error creating batches table:', err);
+      console.log('Database connection opened');
+      
+      // Set timeout for busy database
+      db.configure('busyTimeout', 10000);
+      
+      // Create tables one by one (not using serialize)
+      createTables()
+        .then(() => {
+          console.log('All tables initialized');
+          resolve(db);
+        })
+        .catch((err) => {
+          console.error('Failed to create tables:', err);
+          reject(err);
         });
-
-        // pH Logs table
-        db.run(`
-          CREATE TABLE IF NOT EXISTS pH_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            batchId TEXT NOT NULL,
-            ph REAL NOT NULL,
-            sensory TEXT NOT NULL,
-            time INTEGER NOT NULL,
-            createdAt INTEGER NOT NULL,
-            FOREIGN KEY (batchId) REFERENCES batches(id) ON DELETE CASCADE
-          )
-        `, (err) => {
-          if (err) console.error('Error creating pH_logs table:', err);
-        });
-
-        // History table (archived batches)
-        db.run(`
-          CREATE TABLE IF NOT EXISTS history (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            stgNum TEXT NOT NULL,
-            startTime INTEGER NOT NULL,
-            confirmTime INTEGER NOT NULL,
-            finalScore REAL NOT NULL,
-            archivedAt INTEGER NOT NULL
-          )
-        `, (err) => {
-          if (err) console.error('Error creating history table:', err);
-          else {
-            console.log('All tables created successfully');
-            
-            // Wait for all tables to be created
-            db.all("SELECT name FROM sqlite_master WHERE type='table'", (err, tables) => {
-              clearTimeout(timeout);
-              if (err) {
-                reject(err);
-              } else {
-                console.log('Database initialization complete. Tables:', tables.map(t => t.name).join(', '));
-                resolve(db);
-              }
-            });
-          }
-        });
-      });
     });
   });
+}
+
+async function createTables() {
+  const tables = [
+    {
+      name: 'batches',
+      sql: `CREATE TABLE IF NOT EXISTS batches (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        stgNum TEXT NOT NULL,
+        startTime INTEGER NOT NULL,
+        confirmTime INTEGER,
+        finalScore REAL,
+        isActive INTEGER DEFAULT 1,
+        createdAt INTEGER NOT NULL
+      )`
+    },
+    {
+      name: 'pH_logs',
+      sql: `CREATE TABLE IF NOT EXISTS pH_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        batchId TEXT NOT NULL,
+        ph REAL NOT NULL,
+        sensory TEXT NOT NULL,
+        time INTEGER NOT NULL,
+        createdAt INTEGER NOT NULL,
+        FOREIGN KEY (batchId) REFERENCES batches(id) ON DELETE CASCADE
+      )`
+    },
+    {
+      name: 'history',
+      sql: `CREATE TABLE IF NOT EXISTS history (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        stgNum TEXT NOT NULL,
+        startTime INTEGER NOT NULL,
+        confirmTime INTEGER NOT NULL,
+        finalScore REAL NOT NULL,
+        archivedAt INTEGER NOT NULL
+      )`
+    }
+  ];
+
+  for (const table of tables) {
+    await new Promise((resolve, reject) => {
+      db.run(table.sql, (err) => {
+        if (err) {
+          console.error(`Error creating ${table.name}:`, err);
+          reject(err);
+        } else {
+          console.log(`✓ Created table: ${table.name}`);
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 function getDatabase() {

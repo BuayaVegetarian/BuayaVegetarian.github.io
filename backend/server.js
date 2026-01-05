@@ -217,7 +217,7 @@ async function startServer() {
     await db.initializeDatabase();
     console.log('✓ Database initialized successfully');
 
-    const server = app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, 'localhost', () => {
       console.log(`✓ Santan Demo server running on port ${PORT}`);
       console.log(`  API: http://localhost:${PORT}/api`);
       console.log(`  Health: http://localhost:${PORT}/api/state`);
