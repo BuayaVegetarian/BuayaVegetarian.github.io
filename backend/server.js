@@ -12,8 +12,8 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve static frontend files
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Serve static frontend files from root
+app.use(express.static(path.join(__dirname, '..')));
 
 // ===== API ROUTES =====
 
