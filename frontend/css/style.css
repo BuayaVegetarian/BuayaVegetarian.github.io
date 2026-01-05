@@ -1,0 +1,386 @@
+/* =======================
+   RESET & BASE
+======================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-page: #f9fafb;
+  --bg-surface: #ffffff;
+  --bg-muted: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+
+  --border: #e5e7eb;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.06);
+
+  --transition: 0.2s ease;
+}
+
+body {
+  font-family: "Poppins", "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* =======================
+   GLOBAL INTERACTION
+======================= */
+button,
+nav button,
+.card,
+tr {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* =======================
+   HEADER
+======================= */
+header {
+  background: var(--bg-surface);
+  padding: 20px 28px;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* =======================
+   NAVIGATION
+======================= */
+nav {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-surface);
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+nav button {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+
+
+nav button.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  position: relative;
+}
+
+nav button.active::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 999px;
+  opacity: 0.85;
+}
+
+/* =======================
+   MAIN LAYOUT
+======================= */
+main {
+  padding: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page {
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =======================
+   CARD
+======================= */
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.card h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+
+
+/* =======================
+   TABLE
+======================= */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th {
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--bg-muted);
+  color: var(--text-secondary);
+}
+
+
+
+/* =======================
+   BUTTON
+======================= */
+button.primary {
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+button.danger {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+/* =======================
+   FORMS & INPUTS
+======================= */
+input[type="text"],
+input[type="number"],
+input[type="time"],
+input[type="datetime-local"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: "Poppins", inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  background: var(--bg-surface);
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* =======================
+   FORM GROUPS
+======================= */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row.full {
+  grid-template-columns: 1fr;
+}
+
+/* =======================
+   COLLECTION PAGE STYLES
+======================= */
+#page-collection .card:first-child {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 28px;
+}
+
+#page-collection .card:first-child h3 {
+  color: white;
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+#page-collection .card:first-child label {
+  color: rgba(255,255,255,0.9);
+}
+
+#page-collection .card:first-child input,
+#page-collection .card:first-child select {
+  background: rgba(255,255,255,0.95);
+  border: none;
+  padding: 12px 14px;
+}
+
+#page-collection .card:first-child button {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* =======================
+   QA PAGE STYLES
+======================= */
+#page-qa .card {
+  padding: 0;
+  overflow: hidden;
+}
+
+#page-qa .card h3 {
+  padding: 24px 24px 0;
+  margin-bottom: 24px;
+}
+
+#page-qa table {
+  margin: 0;
+}
+
+#page-qa th {
+  background: var(--bg-muted);
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 14px 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#page-qa td {
+  padding: 14px 10px;
+  font-size: 14px;
+}
+
+#page-qa input,
+#page-qa select {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+#page-qa button {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* =======================
+   FOCUS (ACCESSIBILITY)
+======================= */
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+}
+
+/* =======================
+   RESPONSIVE (MOBILE)
+======================= */
+@media (max-width: 768px) {
+  header {
+    font-size: 16px;
+    padding: 16px 20px;
+  }
+
+  nav {
+    padding: 10px 20px;
+  }
+
+  main {
+    padding: 20px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+}
