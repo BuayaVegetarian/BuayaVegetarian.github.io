@@ -1,4 +1,9 @@
-const API_BASE = 'http://localhost:3000/api';
+// Configure API base URL based on environment
+// For development (localhost): use relative /api
+// For production (GitHub Pages): specify full backend URL
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '/api'
+  : (window.API_BASE_URL || '/api'); // Can be set via window.API_BASE_URL or script tag
 
 let state = {
   batches: [],
@@ -22,18 +27,23 @@ async function createBatch(stgNum, startTime) {
   try {
     const ts = typeof startTime === "number" ? startTime : Date.now();
 
+    console.log('Creating batch:', { stgNum, startTime: ts });
     const response = await fetch(`${API_BASE}/batches`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stgNum, startTime: ts })
     });
 
+    console.log('Response status:', response.status);
+    
     if (response.ok) {
       const batch = await response.json();
       state.batches.push(batch);
       renderAll();
     } else {
-      alert('Failed to create batch');
+      const errorData = await response.text();
+      console.error('Server error response:', errorData);
+      alert('Failed to create batch: ' + errorData);
     }
   } catch (err) {
     console.error('Failed to create batch:', err);

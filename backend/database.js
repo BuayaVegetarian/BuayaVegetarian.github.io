@@ -53,13 +53,16 @@ function initializeDatabase() {
             finalScore REAL NOT NULL,
             archivedAt INTEGER NOT NULL
           )
-        `, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(db);
-          }
-        });
+        `);
+      });
+      
+      // Wait for all tables to be created
+      db.all("SELECT name FROM sqlite_master WHERE type='table'", (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(db);
+        }
       });
     });
   });

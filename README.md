@@ -138,7 +138,136 @@ npm run dev
 
 This requires `nodemon` to be installed (already in devDependencies).
 
-### Project Files
+## Deployment
+
+### Architecture
+- **Frontend**: Static files (index.html, css/, js/) - can deploy to GitHub Pages, Netlify, Vercel
+- **Backend**: Node.js/Express server - needs to run on a server with Node.js
+
+For production, frontend and backend must be deployed **separately** if using different hosting:
+
+### Option 1: GitHub Pages (Frontend) + Railway (Backend) - RECOMMENDED
+
+#### Step 1: Deploy Backend to Railway
+
+1. Go to [railway.app](https://railway.app)
+2. Sign up with GitHub
+3. Create new project → Deploy from GitHub repo
+4. Select your `santan-demo` repo
+5. Railway auto-detects `package.json` and deploys
+6. Once deployed, you'll get a URL like `https://santan-demo-production.up.railway.app`
+7. Note this URL
+
+#### Step 2: Configure Frontend for Production
+
+Edit `index.html` and uncomment the API_BASE_URL configuration:
+
+```html
+<script>
+  // For GitHub Pages deployment with external backend:
+  window.API_BASE_URL = 'https://your-railway-app-url'; // Replace with actual Railway URL
+</script>
+```
+
+#### Step 3: Deploy Frontend to GitHub Pages
+
+1. Ensure `gh-pages` branch exists or will be auto-created
+2. Modify `package.json` to add:
+   ```json
+   "homepage": "https://buayavegetarian.github.io/",
+   "scripts": {
+     "predeploy": "npm run build",
+     "deploy": "gh-pages -d .",
+     ...
+   }
+   ```
+3. Install gh-pages:
+   ```bash
+   npm install --save-dev gh-pages
+   ```
+4. Deploy:
+   ```bash
+   npm run deploy
+   ```
+
+### Option 2: Docker + Any Server
+
+Create `Dockerfile` in project root:
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY . .
+RUN npm install
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+Build and run:
+```bash
+docker build -t santan-demo .
+docker run -p 3000:3000 santan-demo
+```
+
+### Option 3: Heroku (Legacy - May require paid plan)
+
+1. Install Heroku CLI
+2. `heroku login`
+3. `heroku create santan-demo`
+4. `git push heroku main`
+
+### CORS & API Configuration
+
+If frontend and backend are on different domains:
+- ✅ CORS is already enabled in `server.js` (line 12)
+- ✅ Frontend will auto-detect and use correct API URL
+- Set `window.API_BASE_URL` in `index.html` to backend server URL
+
+### Environment Variables (Optional)
+
+For future versions with sensitive config:
+- Create `.env` file (never commit)
+- Use `dotenv` package to load environment variables
+- Frontend static files cannot use .env, use window.API_BASE_URL instead
+
+### Testing Production Setup Locally
+
+1. Build static files (if using bundler)
+2. Serve from backend:
+   ```bash
+   # Frontend files are already in root, served by express.static()
+   npm start
+   ```
+3. Visit `http://localhost:3000`
+
+## Troubleshooting
+
+### "Error creating batch: Failed to fetch"
+**Cause**: Frontend cannot reach backend API
+
+**Solutions**:
+1. Check backend server is running (`npm start`)
+2. Verify API URL in browser console (F12 → Console → type `API_BASE`)
+3. For GitHub Pages + external backend: ensure `window.API_BASE_URL` is set correctly in `index.html`
+4. Check CORS: backend should allow requests from frontend domain
+
+### "Database not initialized"
+**Cause**: Database initialization failed
+
+**Solutions**:
+1. Delete `backend/santan.db` and restart server
+2. Check folder permissions (need write access)
+3. Check logs for SQLite errors
+
+### Batch stuck after creation
+**Cause**: Frontend state sync issue
+
+**Solutions**:
+1. Refresh page (F5)
+2. Check browser console (F12) for fetch errors
+3. Verify backend responded with 200 status
+
+## Project Files
 
 **Frontend** (`frontend/js/`):
 - `state.js` - API client & state synchronization

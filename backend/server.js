@@ -58,6 +58,7 @@ app.get('/api/history', async (req, res) => {
 // POST /api/batches - Create a new batch
 app.post('/api/batches', async (req, res) => {
   try {
+    console.log('POST /api/batches - Request received:', req.body);
     const { stgNum, startTime } = req.body;
 
     if (!stgNum) {
@@ -79,9 +80,10 @@ app.post('/api/batches', async (req, res) => {
       [id, name, stgNum, ts, now]
     );
 
+    console.log('Batch created successfully:', id);
     res.json({ id, name, stgNum, startTime: ts, phLogs: [] });
   } catch (err) {
-    console.error(err);
+    console.error('Error creating batch:', err);
     res.status(500).json({ error: err.message });
   }
 });
