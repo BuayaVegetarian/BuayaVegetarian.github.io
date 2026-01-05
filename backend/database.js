@@ -7,11 +7,21 @@ let db = null;
 
 function initializeDatabase() {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Database initialization timeout (30s)'));
+    }, 30000);
+
     db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
+        clearTimeout(timeout);
         reject(err);
         return;
       }
+
+      console.log('Database connection established');
+
+      // Set timeout for serialized operations
+      db.configure('busyTimeout', 5000);
 
       // Create tables
       db.serialize(() => {
@@ -27,7 +37,9 @@ function initializeDatabase() {
             isActive INTEGER DEFAULT 1,
             createdAt INTEGER NOT NULL
           )
-        `);
+        `, (err) => {
+          if (err) console.error('Error creating batches table:', err);
+        });
 
         // pH Logs table
         db.run(`
@@ -40,7 +52,9 @@ function initializeDatabase() {
             createdAt INTEGER NOT NULL,
             FOREIGN KEY (batchId) REFERENCES batches(id) ON DELETE CASCADE
           )
-        `);
+        `, (err) => {
+          if (err) console.error('Error creating pH_logs table:', err);
+        });
 
         // History table (archived batches)
         db.run(`
@@ -53,16 +67,23 @@ function initializeDatabase() {
             finalScore REAL NOT NULL,
             archivedAt INTEGER NOT NULL
           )
-        `);
-      });
-      
-      // Wait for all tables to be created
-      db.all("SELECT name FROM sqlite_master WHERE type='table'", (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(db);
-        }
+        `, (err) => {
+          if (err) console.error('Error creating history table:', err);
+          else {
+            console.log('All tables created successfully');
+            
+            // Wait for all tables to be created
+            db.all("SELECT name FROM sqlite_master WHERE type='table'", (err, tables) => {
+              clearTimeout(timeout);
+              if (err) {
+                reject(err);
+              } else {
+                console.log('Database initialization complete. Tables:', tables.map(t => t.name).join(', '));
+                resolve(db);
+              }
+            });
+          }
+        });
       });
     });
   });

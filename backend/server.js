@@ -15,6 +15,13 @@ app.use(bodyParser.json());
 // Serve static frontend files from root
 app.use(express.static(path.join(__dirname, '..')));
 
+// ===== HEALTH CHECK =====
+
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // ===== API ROUTES =====
 
 // GET /api/batches - Get all active batches
@@ -202,12 +209,26 @@ app.get('/api/state', async (req, res) => {
 
 async function startServer() {
   try {
+    console.log('Starting Santan Demo server...');
+    console.log('PORT:', PORT);
+    console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+    
+    console.log('Initializing database...');
     await db.initializeDatabase();
-    console.log('Database initialized');
+    console.log('✓ Database initialized successfully');
 
-    app.listen(PORT, () => {
-      console.log(`Santan Demo server running on http://localhost:${PORT}`);
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✓ Santan Demo server running on port ${PORT}`);
+      console.log(`  API: http://localhost:${PORT}/api`);
+      console.log(`  Health: http://localhost:${PORT}/api/state`);
     });
+
+    // Handle errors
+    server.on('error', (err) => {
+      console.error('Server error:', err);
+      process.exit(1);
+    });
+
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
